@@ -1,6 +1,6 @@
 import Navbar from "@/components/Navbar/Navbar";
 import Image from "next/image";
-
+import '../styles/globals.css'; 
 export default function Home() {
   return (
     <div className="min-h-screen bg-black bg-gradient-to-br  from-black via-blue-900/60 to-purple-900/70">
