@@ -1,10 +1,35 @@
 'use client'
-import { useRouter } from 'next/navigation';
-import React, {useState} from 'react'
+import { redirect, useRouter } from 'next/navigation';
+import React, {FormEvent, useState}from 'react'
+import { signIn } from 'next-auth/react';
+import Link from 'next/link';
 
 const page = () => {
     const [showPassword, setShowPassword] = useState(false);
     const router = useRouter()
+    const [error ,setError] = useState("")
+    const [isLoading, setIsLoading] = useState(false)
+    //handle submit btn
+
+    const handleSubmit = async(event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault()
+        const formData = new FormData(event.currentTarget);
+        const res = await signIn("credentials", {
+            email: formData.get("email"),
+            password: formData.get("password"),
+            redirect: false,
+            
+        })
+
+        if(res?.error){
+            setError(res.error as string)
+            setIsLoading(false)
+        }
+        if(res?.ok){
+            router.push("/dashboard/home");
+            router.refresh()
+        }
+    }
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-blue-900/60 to-purple-900/70 px-4">
             <div className="w-full max-w-md bg-black/80 backdrop-blur-md rounded-xl shadow-2xl p-8">
@@ -12,7 +37,14 @@ const page = () => {
                 <p className="text-gray-400 mb-8 text-center">
                     Welcome! Please enter your details to continue
                 </p>
-                <form>
+
+                 {error && (
+                    <div className="mb-4 p-4 bg-red-500/10 border border-red-500 rounded-lg">
+                        <p className="text-red-500 text-sm">{error}</p>
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit}>
 
                     <div className="mb-6">
                         <label htmlFor="email" className="block text-gray-300 mb-2">
@@ -52,9 +84,11 @@ const page = () => {
                     </div>
                     <button
                         type="submit"
+                        disabled={isLoading}
                         className="w-full bg-blue-600 hover:bg-blue-700 transition text-white font-semibold py-2 rounded-lg shadow mt-2"
                     >
-                        Login
+                        
+                        {isLoading ? "Logging in..." : "Login"}
                     </button>
                 </form>
                 <div className="mt-6 flex items-center justify-between">

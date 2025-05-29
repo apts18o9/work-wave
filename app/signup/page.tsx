@@ -1,10 +1,55 @@
 'use client'
 import { useRouter } from 'next/navigation';
-import React, {useState} from 'react'
-
+import React, {useRef, useState} from 'react'
+import Link from 'next/link';
+import { register } from '@/actions/register';
 const page = () => {
     const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState<string>();
+    const ref = useRef<HTMLFormElement>(null)
     const router = useRouter()
+     const [isLoading, setIsLoading] = useState(false);
+
+    // const handleSubmit = async(formData: FormData) => {
+    //     const reg = await register({
+    //         email: formData.get("email"),
+    //         password: formData.get("password"),
+    //         name: formData.get("name")
+    //     });
+
+    //     ref.current?.reset();
+    //     if(reg?.error){
+    //         setError(reg.error)
+    //         return 
+    //     }
+    //     else{
+    //         return router.push("/login")
+    //     }
+    // }
+
+
+    const handleSubmit = async(event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setIsLoading(true);
+        setError(undefined);
+
+        const formData = new FormData(event.currentTarget);
+        const reg = await register({
+            email: formData.get("email") as string,
+            password: formData.get("password") as string,
+            name: formData.get("name") as string
+        });
+
+        if(reg?.error) {
+            setError(reg.error);
+            setIsLoading(false);
+            return;
+        }
+
+        router.push("/login");
+    }
+
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-blue-900/60 to-purple-900/70 px-4">
             <div className="w-full max-w-md bg-black/80 backdrop-blur-md rounded-xl shadow-2xl p-8">
@@ -12,7 +57,14 @@ const page = () => {
                 <p className="text-gray-400 mb-8 text-center">
                     Welcome! Please enter your details to create your account.
                 </p>
-                <form>
+
+                 {error && (
+                    <div className="mb-4 p-4 bg-red-500/10 border border-red-500 rounded-lg">
+                        <p className="text-red-500 text-sm">{error}</p>
+                    </div>
+                )}
+
+                <form ref={ref} onSubmit={handleSubmit}>
                     <div className="mb-6">
                         <label htmlFor="name" className="block text-gray-300 mb-2">
                             Name
@@ -65,11 +117,13 @@ const page = () => {
                     </div>
                     <button
                         type="submit"
+                        disabled={isLoading}
                         className="w-full bg-blue-600 hover:bg-blue-700 transition text-white font-semibold py-2 rounded-lg shadow mt-2"
                     >
-                        Sign In
+                        {isLoading ? "Creating Account..." : "Sign Up"}
                     </button>
                 </form>
+
                 <div className="mt-6 flex items-center justify-between">
                     <p className="text-blue-400   transition-colors duration-200 text-sm font-medium">
                         Already a user?
@@ -78,6 +132,7 @@ const page = () => {
                     <button
                         className="relative inline-block px-5 py-2 bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 text-white rounded-lg shadow hover:from-blue-700 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200 font-semibold overflow-hidden"
                         type="button"
+                        disabled={isLoading}
                         onClick={() => router.push("/login")}
                     >
                         <span className="relative z-10">Login</span>

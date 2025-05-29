@@ -15,20 +15,41 @@ export const authOptions: NextAuthOptions = {
                 password: { label: "Password", type: "password" },
             },
             async authorize(credentials) {
-                await connectDB();
-                const user = await User.findOne({
-                    email: credentials?.email,
-                }).select("+password");
+                try {
+                    await connectDB();
 
-                if (!user) throw new Error("Wrong Email");
+                    if (!credentials?.email || !credentials?.password) {
+                        throw new Error("Please provide email and password");
+                    }
 
-                const passwordMatch = await bcrypt.compare(
-                    credentials!.password,
-                    user.password
-                );
+                    const user = await User.findOne({
+                        email: credentials.email
+                    }).select("+password");
 
-                if (!passwordMatch) throw new Error("Wrong Password");
-                return user;
+                    if (!user) {
+                        throw new Error("Invalid email");
+                    }
+
+                    const isPasswordValid = await bcrypt.compare(
+                        credentials.password,
+                        user.password
+                    );
+
+                    if (!isPasswordValid) {
+                        throw new Error("Invalid password");
+                    }
+
+                    // Return only necessary user data
+                    return {
+                        id: user._id.toString(),
+                        email: user.email,
+                        name: user.name
+                    };
+
+                } catch (error) {
+                    console.error("Authentication error:", error);
+                    throw error;
+                }
             },
         }),
     ],
