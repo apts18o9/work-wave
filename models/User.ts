@@ -11,7 +11,9 @@ export interface User{
     password: string,
     email: string,
     createdAt: Date,
-    updatedAt: Date
+    updatedAt: Date,
+    githubId?: string,
+    githubUsername?: string
 }
 
 const UserSchema = new Schema<User>({
@@ -29,7 +31,20 @@ const UserSchema = new Schema<User>({
 
     password: {
         type: String, 
-        required: [true, "Password is required"]
+        required: [function(){
+            return this.githubId ? false: true;
+        }, "password is required for email login"]
+    }, 
+
+    githubId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+
+    githubUsername: {
+        type: String,
+        sparse: true
     }
 }, {
     timestamps: true
