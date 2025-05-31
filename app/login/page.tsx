@@ -9,7 +9,7 @@ const page = () => {
     const router = useRouter()
     const [error ,setError] = useState("")
     const [isLoading, setIsLoading] = useState(false)
-    //handle submit btn
+    // handle submit btn
 
     const handleSubmit = async(event: FormEvent<HTMLFormElement>) => {
         event.preventDefault()
@@ -30,6 +30,8 @@ const page = () => {
             router.refresh()
         }
     }
+
+    
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-black via-blue-900/60 to-purple-900/70 px-4">
             <div className="w-full max-w-md bg-black/80 backdrop-blur-md rounded-xl shadow-2xl p-8">

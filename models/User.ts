@@ -13,7 +13,8 @@ export interface User{
     createdAt: Date,
     updatedAt: Date,
     githubId?: string,
-    githubUsername?: string
+    githubUsername?: string,
+    provider: 'credentials' | 'github'
 }
 
 const UserSchema = new Schema<User>({
@@ -45,7 +46,12 @@ const UserSchema = new Schema<User>({
     githubUsername: {
         type: String,
         sparse: true
-    }
+    },
+    provider: {
+        type: String,
+        enum: ['credentials', 'github'],
+        default: 'credentials'
+    },
 }, {
     timestamps: true
 });

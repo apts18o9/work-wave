@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import { redirect } from 'next/navigation'
 import Navbar from "@/app/dashboard/home/Navbar"
 import { useState, useEffect } from "react"
+import RecentRepos from '@/components/RecentRepos'
 
 export default function DashboardHome() {
   const { data: session, status } = useSession()
@@ -49,7 +50,8 @@ export default function DashboardHome() {
           {/* GitHub Projects Section */}
           <div className="bg-black/70 rounded-xl shadow-lg p-6">
             <h3 className="text-xl font-semibold text-blue-300 mb-4">Recent GitHub Projects</h3>
-            <p className="text-gray-400 italic">No projects available yet.</p>
+            <RecentRepos />
+            {/* <p className="text-gray-400 italic">No projects available yet.</p> */}
           </div>
 
           {/* Comment Section */}
