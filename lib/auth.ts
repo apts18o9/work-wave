@@ -72,59 +72,54 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
         async signIn({ user, account, profile }: any) {
             if (account?.provider === 'github') {
-                const { email, name } = user
                 try {
-                    await connectDB()
+                    await connectDB();
+                    const githubProfile = profile as GitHubProfile;
 
-                    //checking if user exits
-                    const userExists = await User.findOne({ email: user.email })
-                    if (!userExists) {
-                        await User.create({
-                            email,
-                            name,
-                            githubId: user.id,
-                            githubUsername: (profile as any).login,
-
-                            password: crypto.randomBytes(32).toString('hex')
-
-                        })
-                    } else {
-                        // Update existing user with GitHub info
-                        await User.findOneAndUpdate(
-                            { email: user.email },
-                            {
-                                githubId: user.id,
-                                githubUsername: (profile as any).login
+                    // Update or create user with GitHub info
+                    await User.findOneAndUpdate(
+                        { email: user.email },
+                        {
+                            $set: {
+                                githubUsername: githubProfile.login,
+                                githubId: githubProfile.id,
+                                name: user.name || githubProfile.name,
+                                email: user.email,
+                                provider: 'github'
                             }
-                        )
-                    }
-                    return true
-                }
-                catch (error) {
-                    console.log("error saving user: ", error);
-                    return false
+                        },
+                        { upsert: true }
+                    );
+                    return true;
+                } catch (error) {
+                    console.error("Error in signIn callback:", error);
+                    return false;
                 }
             }
-            return true
+            return true;
         },
 
-        async session({ session, token, user }) {
+        async session({ session, token }) {
             if (session?.user) {
-                const userData = await User.findOne({ email: session.user.email }) //to keep username same and only chnage github username 
-                if (userData) {
-                    session.user.githubUsername = userData.githubUsername || null
-                    // Keep the original name if it exists
-                    session.user.name = userData.name || session.user.name
-                }
+                // Get fresh user data from database
+                const userData = await User.findOne({ email: session.user.email });
+
+                // Add GitHub username to session
+                session.user.githubUsername = userData?.githubUsername || null;
+
+                // Debug log
+                console.log('Session updated:', session);
             }
-            return session
+            return session;
         },
+
         async jwt({ token, account, profile }) {
             if (account?.provider === 'github') {
-                const githubProfile = profile as GitHubProfile
-                token.githubUsername = githubProfile.login
+                const githubProfile = profile as GitHubProfile;
+                // Store GitHub info in token
+                token.githubUsername = githubProfile.login;
             }
-            return token
+            return token;
         }
     },
 
